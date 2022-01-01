@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real Time Node.JS chat</title>
+  <link rel="stylesheet" href="./styles/styles.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdn.socket.io/4.4.0/socket.io.min.js"
+    integrity="sha384-1fOn6VtTq3PWwfsOrk45LnYcGosJwzMHv+Xh/Jx5303FVOXzEnw0EpLv30mtjmlj"
+    crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <form id="chat">
+    <input type="text" name="username" placeholder="digite seu nome de usuario">
+    <div class="messages"></div>
+    <input type="text" name="message" placeholder="digite sua mensagem">
+    <button type="submit">Enviar</button>
+  </form>
+  <script>
+    const socket = io('http://localhost:3000');
+    const chat = document.getElementById('chat');
+
+    function renderMessage(messageObject) {
+      $('.messages').append('<div class="message"><strong>' + messageObject.author + '</strong>: ' + messageObject.message + '</div>')
+    }
+
+    socket.on('receivedMessage', function (receivedMessage) {
+      renderMessage(receivedMessage);
+    })
+
+    socket.on('previousMessage', function (previousMessages) {
+      previousMessages.forEach(message => {
+        renderMessage(message);
+      });
+    })
+
+    chat.onsubmit = (event) => {
+      event.preventDefault()
+      const author = $('input[name=username]').val()
+      const message = $('input[name=message]').val()
+      if (author.length && message.length) {
+        const messageObject = {
+          author: author,
+          message: message
+        }
+        socket.emit('sendMessage', messageObject)
+        renderMessage(messageObject);
+      }
+    }
+
+
+  </script>
+</body>
+
+</html>
